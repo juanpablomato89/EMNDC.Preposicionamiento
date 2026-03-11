@@ -9,7 +9,6 @@ using EMNDC.Preposicionamiento.BasicResponses;
 using EMNDC.Preposicionamiento.IServices;
 using EMNDC.Preposicionamiento.Models.Requests;
 using EMNDC.Preposicionamiento.Models.Responses;
-using EMNDC.Preposicionamiento.Models;
 
 namespace EMNDC.Preposicionamiento.Controllers
 {
