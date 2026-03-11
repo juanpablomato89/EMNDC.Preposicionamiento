@@ -57,12 +57,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ObservatoryDbContext>(options =>
+builder.Services.AddDbContext<PreposicionamientoDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddIdentityCore<UserModel>()
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ObservatoryDbContext>()
+    .AddEntityFrameworkStores<PreposicionamientoDbContext>()
     .AddDefaultTokenProviders();
 
 // Configuración

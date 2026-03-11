@@ -19,11 +19,11 @@ namespace EMNDC.Preposicionamiento.Services
         private readonly IStringLocalizer<IAuthService> _localizer;
         private readonly IMailKitService _emailService;
         private readonly UserManager<UserModel> _userManager;
-        private readonly ObservatoryDbContext _context;
+        private readonly PreposicionamientoDbContext _context;
         private readonly JwtSettings _jwtSettings;
         public AuthService(IConfiguration configuration,
             IStringLocalizer<IAuthService> localizer, UserManager<UserModel> userManager,
-            IMailKitService emailService, ObservatoryDbContext context, IOptions<JwtSettings> jwtSettings)
+            IMailKitService emailService, PreposicionamientoDbContext context, IOptions<JwtSettings> jwtSettings)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));

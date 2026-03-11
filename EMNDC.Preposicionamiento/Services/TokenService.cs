@@ -15,10 +15,10 @@ namespace EMNDC.Preposicionamiento.Services
     public class TokenService : ITokenService
     {
         private readonly UserManager<UserModel> _userManager;
-        private readonly ObservatoryDbContext _context;
+        private readonly PreposicionamientoDbContext _context;
         private readonly IConfiguration _config;
 
-        public TokenService(UserManager<UserModel> userManager, ObservatoryDbContext context, IConfiguration config)
+        public TokenService(UserManager<UserModel> userManager, PreposicionamientoDbContext context, IConfiguration config)
         {
             _userManager = userManager;
             _context = context;

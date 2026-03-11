@@ -4,9 +4,9 @@ using EMNDC.Preposicionamiento.Models;
 
 namespace EMNDC.Preposicionamiento.DB
 {
-    public class ObservatoryDbContext : IdentityDbContext<UserModel>
+    public class PreposicionamientoDbContext : IdentityDbContext<UserModel>
     {
-        public ObservatoryDbContext(DbContextOptions<ObservatoryDbContext> options) : base(options) { }
+        public PreposicionamientoDbContext(DbContextOptions<PreposicionamientoDbContext> options) : base(options) { }
         public DbSet<TokenModel> Token { get; set; }
     }
 }
