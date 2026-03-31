@@ -70,6 +70,9 @@ builder.Services.AddIdentityCore<UserModel>()
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
+var ldapSettings = builder.Configuration.GetSection("Ldap");
+builder.Services.Configure<JwtSettings>(jwtSettings);
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
