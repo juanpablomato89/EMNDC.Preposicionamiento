@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -116,10 +117,12 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 builder.Services.AddSingleton(provider =>
 {
+    var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+
     var config = new MapperConfiguration(cfg =>
     {
         cfg.AddProfile<MappingProfiles>();
-    });
+    }, loggerFactory);
 
     return config.CreateMapper();
 });
