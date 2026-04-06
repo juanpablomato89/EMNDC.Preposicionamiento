@@ -71,7 +71,7 @@ var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
 var ldapSettings = builder.Configuration.GetSection("Ldap");
-builder.Services.Configure<JwtSettings>(jwtSettings);
+builder.Services.Configure<LdapSettings>(ldapSettings);
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -134,6 +134,7 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IMailKitService, MailService>();
+builder.Services.AddScoped<IActiveDirectoryService, ActiveDirectoryService>();
 
 var app = builder.Build();
 

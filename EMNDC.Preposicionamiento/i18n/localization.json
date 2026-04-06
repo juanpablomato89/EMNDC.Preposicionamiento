@@ -1,114 +1,120 @@
 { //BadRequests
-  "400": {
-    "Values": {
-      "en-US": "Request with malformed syntax.",
-      "es-ES": "Petici�n mal formada."
-    }
-  },
-  "400001": {
-    "Values": {
-      "en-US": "Error creating user.",
-      "es-ES": "Error creando usuario."
-    }
-  },
-  "400002": {
-    "Values": {
-      "en-US": "The password does not meet the complexity requirements.",
-      "es-ES": "La contrasena no cumple con los requisitos de complejidad."
-    }
-  },
+    "400": {
+        "Values": {
+            "en-US": "Request with malformed syntax.",
+            "es-ES": "Petici�n mal formada."
+        }
+    },
+    "400001": {
+        "Values": {
+            "en-US": "Error creating user.",
+            "es-ES": "Error creando usuario."
+        }
+    },
+    "400002": {
+        "Values": {
+            "en-US": "The password does not meet the complexity requirements.",
+            "es-ES": "La contrasena no cumple con los requisitos de complejidad."
+        }
+    },
+    "400003": {
+        "Values": {
+            "en-US": "The email address is already registered.",
+            "es-ES": "El correo electrónico ya está registrado."
+        }
+    },
 
-  //Unauthorized
-  "401": {
-    "Values": {
-      "en-US": "Unauthorized access. Requires user authentication.",
-      "es-ES": "Acceso no autorizado. Requiere autenticaci�n."
-    }
-  },
-  "401001": {
-    "Values": {
-      "en-US": "The user does not have a valid session started.",
-      "es-ES": "El usuario no tiene iniciada un sesion valida"
-    }
-  },
-  "401002": {
-    "Values": {
-      "en-US": "Invalid Google token",
-      "es-ES": "Token de Google invalido"
-    }
-  },
+    //Unauthorized
+    "401": {
+        "Values": {
+            "en-US": "Unauthorized access. Requires user authentication.",
+            "es-ES": "Acceso no autorizado. Requiere autenticaci�n."
+        }
+    },
+    "401001": {
+        "Values": {
+            "en-US": "The user does not have a valid session started.",
+            "es-ES": "El usuario no tiene iniciada un sesion valida"
+        }
+    },
+    "401002": {
+        "Values": {
+            "en-US": "Invalid Google token",
+            "es-ES": "Token de Google invalido"
+        }
+    },
 
-  //Forbidden
-  "403": {
-    "Values": {
-      "en-US": "Forbidden request.",
-      "es-ES": "Petici�n prohibida."
-    }
-  },
-  "403001": {
-    "Values": {
-      "en-US": "Error changing the password.",
-      "es-ES": "Error cambiando la contrasena."
-    }
-  },
+    //Forbidden
+    "403": {
+        "Values": {
+            "en-US": "Forbidden request.",
+            "es-ES": "Petici�n prohibida."
+        }
+    },
+    "403001": {
+        "Values": {
+            "en-US": "Error changing the password.",
+            "es-ES": "Error cambiando la contrasena."
+        }
+    },
 
-  //Not Found
-  "404": {
-    "Values": {
-      "en-US": "Resource not found.",
-      "es-ES": "Recurso no encontrado."
-    }
-  },
-  "404001": {
-    "Values": {
-      "en-US": "Email not Found.",
-      "es-ES": "Email no encontrado."
-    }
-  },
-  "404002": {
-    "Values": {
-      "en-US": "Invalid code.",
-      "es-ES": "Codigo Incorrecto."
-    }
-  },
-  "404003": {
-    "Values": {
-      "en-US": "User not Found.",
-      "es-ES": "usuario no encontrado."
-    }
-  },
+    //Not Found
+    "404": {
+        "Values": {
+            "en-US": "Resource not found.",
+            "es-ES": "Recurso no encontrado."
+        }
+    },
+    "404001": {
+        "Values": {
+            "en-US": "Email not Found.",
+            "es-ES": "Email no encontrado."
+        }
+    },
+    "404002": {
+        "Values": {
+            "en-US": "Invalid code.",
+            "es-ES": "Codigo Incorrecto."
+        }
+    },
+    "404003": {
+        "Values": {
+            "en-US": "User not Found.",
+            "es-ES": "usuario no encontrado."
+        }
+    },
 
-  //RequestTimeout
-  "408": {
-    "Values": {
-      "en-US": "Request timeout.",
-      "es-ES": "Tiempo de espera agotado."
+    //RequestTimeout
+    "408": {
+        "Values": {
+            "en-US": "Request timeout.",
+            "es-ES": "Tiempo de espera agotado."
+        }
+    },
+    "408001": {
+        "Values": {
+            "en-US": "You must wait 1 minute in order to send the next code.",
+            "es-ES": "Debe esperar 1 minuto para solicitar el proximo codigo."
+        }
+    },
+    "408002": {
+        "Values": {
+            "en-US": "This code has expired.",
+            "es-ES": "El codigo ha expirado."
+        }
+    },
+    //UnsupportedMediaType
+    "415": {
+        "Values": {
+            "en-US": "Unsupported media type.",
+            "es-ES": "Tipo no soportado."
+        }
+    },
+    //InternalServerError
+    "500": {
+        "Values": {
+            "en-US": "Internal server error.",
+            "es-ES": "Error interno del servidor."
+        }
     }
-  },
-  "408001": {
-    "Values": {
-      "en-US": "You must wait 1 minute in order to send the next code.",
-      "es-ES": "Debe esperar 1 minuto para solicitar el proximo codigo."
-    }
-  },
-  "408002": {
-    "Values": {
-      "en-US": "This code has expired.",
-      "es-ES": "El codigo ha expirado."
-    }
-  },
-  //UnsupportedMediaType
-  "415": {
-    "Values": {
-      "en-US": "Unsupported media type.",
-      "es-ES": "Tipo no soportado."
-    }
-  },
-  //InternalServerError
-  "500": {
-    "Values": {
-      "en-US": "Internal server error.",
-      "es-ES": "Error interno del servidor."
-    }
-  }
 }

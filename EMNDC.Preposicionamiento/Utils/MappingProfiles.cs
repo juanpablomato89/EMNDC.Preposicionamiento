@@ -13,6 +13,12 @@ namespace EMNDC.Preposicionamiento.Utils
                 .ForMember(d => d.Name, opts => opts.MapFrom(source => source.Name))
                 .ForMember(d => d.LastName, opts => opts.MapFrom(source => source.LastName))
                 .ForMember(d => d.Email, opts => opts.MapFrom(source => source.Email));
+
+            CreateMap<ActiveDirectoryUserResponse, UserModel>()
+                .ForMember(d => d.Name, opts => opts.MapFrom(source => source.FirstName))
+                .ForMember(d => d.LastName, opts => opts.MapFrom(source => source.LastName))
+                .ForMember(d => d.IsUserDomain, opts => opts.MapFrom(source => source.IsEnabled))
+                .ForMember(d => d.Email, opts => opts.MapFrom(source => source.Email));
         }
     }
 }

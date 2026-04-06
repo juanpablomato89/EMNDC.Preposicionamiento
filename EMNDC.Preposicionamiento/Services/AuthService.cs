@@ -1,36 +1,36 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using EMNDC.Preposicionamiento.DB;
+﻿using EMNDC.Preposicionamiento.DB;
 using EMNDC.Preposicionamiento.Exceptions;
+using EMNDC.Preposicionamiento.Exceptions.BadRequest;
 using EMNDC.Preposicionamiento.IServices;
 using EMNDC.Preposicionamiento.Models;
 using EMNDC.Preposicionamiento.Models.Requests;
 using EMNDC.Preposicionamiento.Utils;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 
 
 namespace EMNDC.Preposicionamiento.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IConfiguration _configuration;
         private readonly IStringLocalizer<IAuthService> _localizer;
         private readonly IMailKitService _emailService;
+        private readonly IActiveDirectoryService _ldapService;
         private readonly UserManager<UserModel> _userManager;
         private readonly PreposicionamientoDbContext _context;
-        private readonly JwtSettings _jwtSettings;
         public AuthService(IConfiguration configuration,
             IStringLocalizer<IAuthService> localizer, UserManager<UserModel> userManager,
-            IMailKitService emailService, PreposicionamientoDbContext context, IOptions<JwtSettings> jwtSettings)
+            IMailKitService emailService, PreposicionamientoDbContext context, IOptions<JwtSettings> jwtSettings,
+            IActiveDirectoryService ldapService)
         {
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _localizer = localizer ?? throw new ArgumentNullException(nameof(localizer));
+            _ldapService = ldapService ?? throw new ArgumentNullException(nameof(ldapService));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _context = context ?? throw new ArgumentNullException(nameof(context));
-            _jwtSettings = jwtSettings.Value ?? throw new ArgumentNullException(nameof(jwtSettings.Value));
 
         }
 
@@ -42,11 +42,12 @@ namespace EMNDC.Preposicionamiento.Services
                 Email = request.Email,
                 Name = request.Name,
                 LastName = request.LastName,
-                Country = request.Country,
-                PhoneNumber = request.PhoneNumber,
                 CreatedAt = DateTime.UtcNow,
                 ModifieddAt = DateTime.UtcNow,
             };
+
+            var validateEmail = await _context.Users.Where(r=> r.Email == request.Email).FirstOrDefaultAsync();
+            if (validateEmail !=null) throw new EmailAlreadyRegisteredBadRequestException(_localizer);
 
             var validate_password = await ValidatePasswordAsync(request.Password);
 
@@ -80,6 +81,34 @@ namespace EMNDC.Preposicionamiento.Services
 
         public async Task<UserModel> LoginAsync(LoginRequests request)
         {
+            if (request.Email.Split('@')[1] == "dcn.co.cu")
+            {
+                var adUser= await _ldapService.AuthenticateAsync(request.Email, request.Password);
+                var ldapUser = await _userManager.FindByEmailAsync(adUser.Email);
+
+                var newUser = new UserModel
+                {
+                    UserName = adUser.Email,
+                    Email = adUser.Email,
+                    Name = adUser.FirstName,
+                    LastName = adUser.LastName,
+                    IsUserDomain = true,
+                    CreatedAt = DateTime.UtcNow,
+                    ModifieddAt = DateTime.UtcNow,
+                };
+
+                if (ldapUser == null)
+                {
+                    var result = await _context.Users.AddAsync(newUser);
+                    
+                }
+                else
+                {
+                    var result  =  _context.Users.Update(newUser);
+                }
+                await _context.SaveChangesAsync();
+                return newUser;
+            }
 
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null) throw new BaseUnauthorizedException();
@@ -94,7 +123,7 @@ namespace EMNDC.Preposicionamiento.Services
         {
             var user = await _userManager.FindByEmailAsync(email.Email);
 
-            if (user is null) 
+            if (user is null)
             {
                 throw new EmailNotFoundException(_localizer);
             }
@@ -157,7 +186,7 @@ namespace EMNDC.Preposicionamiento.Services
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user,token, request.NewPassword);
+            var result = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
             if (!result.Succeeded)
             {
                 throw new ChangePasswordForbidenException(_localizer);
@@ -176,6 +205,6 @@ namespace EMNDC.Preposicionamiento.Services
             }
 
             return userExist;
-        }        
+        }
     }
 }
