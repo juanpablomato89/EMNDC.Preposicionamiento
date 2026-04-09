@@ -12,5 +12,8 @@ namespace EMNDC.Preposicionamiento.Models
         public DateTime CreatedAt { get; set; }
         public DateTime ModifieddAt { get; set; }
         public bool IsUserDomain { get; set; } = false;
+        public List<Address> Addresses { get; set; } = new List<Address>();
+        public DateTime Creado { get; set; } = DateTime.UtcNow;
+        public DateTime Modificado { get; set; } = DateTime.UtcNow;
     }
 }
