@@ -14,6 +14,5 @@ namespace EMNDC.Preposicionamiento.DB
         public DbSet<Pais> Pais { get; set; }
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Provincia> Provincias { get; set; }
-
     }
 }

@@ -135,6 +135,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IMailKitService, MailService>();
 builder.Services.AddScoped<IActiveDirectoryService, ActiveDirectoryService>();
+builder.Services.AddSingleton<CubaGeoService>();
 
 var app = builder.Build();
 
