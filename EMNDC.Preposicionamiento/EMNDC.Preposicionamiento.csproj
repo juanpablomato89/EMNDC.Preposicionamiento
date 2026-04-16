@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="Utils\DbInitializer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Askmethat.Aspnet.JsonLocalizer" Version="4.0.1" />
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="GeoJSON.Text" Version="1.1.0" />

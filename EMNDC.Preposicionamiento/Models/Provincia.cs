@@ -8,5 +8,6 @@
         public DateTime Creado { get; set; } = DateTime.UtcNow;
         public DateTime Modificado { get; set; } = DateTime.UtcNow;
         public List<Municipio> Municipios { get; set; } = new List<Municipio>();
+        public required string CodigoProvincia { get; set; }
     }
 }

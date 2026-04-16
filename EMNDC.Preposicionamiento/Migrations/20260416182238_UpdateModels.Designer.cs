@@ -4,6 +4,7 @@ using EMNDC.Preposicionamiento.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMNDC.Preposicionamiento.Migrations
 {
     [DbContext(typeof(PreposicionamientoDbContext))]
-    partial class PreposicionamientoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416182238_UpdateModels")]
+    partial class UpdateModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasIndex("ProductosId");
 
-                    b.ToTable("AlmacenProducto", (string)null);
+                    b.ToTable("AlmacenProducto");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Address", b =>
@@ -81,7 +84,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasIndex("UserModelId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Almacen", b =>
@@ -113,7 +116,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasIndex("PosicionamientoId");
 
-                    b.ToTable("Almacens", (string)null);
+                    b.ToTable("Almacens");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Municipio", b =>
@@ -123,10 +126,6 @@ namespace EMNDC.Preposicionamiento.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CodigoMunicipio")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("Creado")
                         .HasColumnType("datetime(6)");
@@ -141,7 +140,7 @@ namespace EMNDC.Preposicionamiento.Migrations
                     b.Property<int>("PosicionamientoId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProvinciaId")
+                    b.Property<int?>("ProvinciaId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -150,7 +149,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasIndex("ProvinciaId");
 
-                    b.ToTable("Municipios", (string)null);
+                    b.ToTable("Municipios");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Pais", b =>
@@ -173,7 +172,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pais", (string)null);
+                    b.ToTable("Pais");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Posicionamiento", b =>
@@ -192,7 +191,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Posicionamientos", (string)null);
+                    b.ToTable("Posicionamientos");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Producto", b =>
@@ -222,7 +221,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Productos", (string)null);
+                    b.ToTable("Productos");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Provincia", b =>
@@ -232,10 +231,6 @@ namespace EMNDC.Preposicionamiento.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CodigoProvincia")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("Creado")
                         .HasColumnType("datetime(6)");
@@ -259,7 +254,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasIndex("PosicionamientoId");
 
-                    b.ToTable("Provincias", (string)null);
+                    b.ToTable("Provincias");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.TokenModel", b =>
@@ -292,7 +287,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Token", (string)null);
+                    b.ToTable("Token");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.UserModel", b =>
@@ -594,15 +589,11 @@ namespace EMNDC.Preposicionamiento.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EMNDC.Preposicionamiento.Models.Provincia", "Provincia")
+                    b.HasOne("EMNDC.Preposicionamiento.Models.Provincia", null)
                         .WithMany("Municipios")
-                        .HasForeignKey("ProvinciaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProvinciaId");
 
                     b.Navigation("Posicionamiento");
-
-                    b.Navigation("Provincia");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Provincia", b =>

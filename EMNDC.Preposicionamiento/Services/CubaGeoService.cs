@@ -24,7 +24,7 @@ public class CubaGeoService
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json);
 
         var provinciasDict = new Dictionary<string, Provincia>();
-        int idProv = 1, idMun = 1;
+        var municipiosTemp = new List<(string CodigoMunicipio, string Descripcion, double Lat, double Lon, string CodigoProvincia)>();
 
         foreach (var feature in featureCollection.Features)
         {
@@ -32,29 +32,51 @@ public class CubaGeoService
             string provinciaNombre = props["province"]?.ToString();
             string provinciaId = props["province_id"]?.ToString();
             string municipioNombre = props["municipality"]?.ToString();
+            string codigoMunicipio = props["DPA_municipality_code"]?.ToString();
 
-            // Calcular centroide de la geometría
             var centroide = CalcularCentroide(feature.Geometry);
 
-            // Obtener o crear la provincia
-            if (!provinciasDict.TryGetValue(provinciaId, out var provincia))
+            if (!municipiosTemp.Any(a => a.CodigoMunicipio == codigoMunicipio))
             {
-                provincia = new Provincia
-                {
-                    Id = idProv++,
-                    Descripcion = provinciaNombre,
-                    Posicionamiento = new Posicionamiento{ Lat = centroide.Lat, Lon= centroide.Lon },
-                    Municipios = new List<Municipio>()
-                };
-                provinciasDict[provinciaId] = provincia;
+                municipiosTemp.Add((codigoMunicipio, municipioNombre, centroide.Lat, centroide.Lon, provinciaId));
             }
 
-            // Crear el municipio
+            if (!provinciasDict.ContainsKey(provinciaId))
+            {
+                provinciasDict[provinciaId] = new Provincia
+                {
+                    Descripcion = provinciaNombre,
+                    CodigoProvincia = provinciaId,
+                    Posicionamiento = new Posicionamiento { Lat = 0, Lon = 0 },
+                    Municipios = new List<Municipio>(),
+                    Creado = DateTime.UtcNow,
+                    Modificado = DateTime.UtcNow
+                };
+            }
+        }
+
+        foreach (var provincia in provinciasDict.Values)
+        {
+            var municipiosDeProvincia = municipiosTemp.Where(m => m.CodigoProvincia == provincia.CodigoProvincia).ToList();
+            if (municipiosDeProvincia.Any())
+            {
+                var latPromedio = municipiosDeProvincia.Average(m => m.Lat);
+                var lonPromedio = municipiosDeProvincia.Average(m => m.Lon);
+                provincia.Posicionamiento = new Posicionamiento { Lat = latPromedio, Lon = lonPromedio };
+            }
+        }
+
+        foreach (var temp in municipiosTemp)
+        {
+            var provincia = provinciasDict[temp.CodigoProvincia];
             var municipio = new Municipio
             {
-                Id = idMun++,
-                Descripcion = municipioNombre,
-                Posicionamiento = new Posicionamiento { Lat = centroide.Lat, Lon = centroide.Lon },
+                Descripcion = temp.Descripcion,
+                CodigoMunicipio = temp.CodigoMunicipio,
+                Posicionamiento = new Posicionamiento { Lat = temp.Lat, Lon = temp.Lon },
+                Provincia = provincia,
+                Creado = DateTime.UtcNow,
+                Modificado = DateTime.UtcNow
             };
             provincia.Municipios.Add(municipio);
         }

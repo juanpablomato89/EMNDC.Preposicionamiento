@@ -6,6 +6,7 @@ namespace EMNDC.Preposicionamiento.DB
 {
     public class PreposicionamientoDbContext : IdentityDbContext<UserModel>
     {
+
         public PreposicionamientoDbContext(DbContextOptions<PreposicionamientoDbContext> options) : base(options) { }
         public DbSet<TokenModel> Token { get; set; }
         public DbSet<Address> Addresses { get; set; }
@@ -14,5 +15,6 @@ namespace EMNDC.Preposicionamiento.DB
         public DbSet<Pais> Pais { get; set; }
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Provincia> Provincias { get; set; }
+        public DbSet<Posicionamiento> Posicionamientos { get; set; }
     }
 }
