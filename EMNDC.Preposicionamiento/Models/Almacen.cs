@@ -7,6 +7,8 @@
         public Posicionamiento Posicionamiento { get; set; }
         public DateTime Creado { get; set; } = DateTime.UtcNow;
         public DateTime Modificado { get; set; } = DateTime.UtcNow;
-        public List<Producto> Productos { get; set; } = new List<Producto>();
+        public List<StockAlmacen> Stocks { get; set; } = new List<StockAlmacen>();
+        public int? AddressId { get; set; }
+        public Address? Address { get; set; }
     }
 }

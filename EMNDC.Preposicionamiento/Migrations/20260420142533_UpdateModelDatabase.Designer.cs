@@ -4,6 +4,7 @@ using EMNDC.Preposicionamiento.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMNDC.Preposicionamiento.Migrations
 {
     [DbContext(typeof(PreposicionamientoDbContext))]
-    partial class PreposicionamientoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420142533_UpdateModelDatabase")]
+    partial class UpdateModelDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,7 +152,7 @@ namespace EMNDC.Preposicionamiento.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Organismos");
+                    b.ToTable("Organismo");
                 });
 
             modelBuilder.Entity("EMNDC.Preposicionamiento.Models.Pais", b =>

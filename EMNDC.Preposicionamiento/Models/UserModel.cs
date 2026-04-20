@@ -9,8 +9,6 @@ namespace EMNDC.Preposicionamiento.Models
         public int? Code { get; set; }
         public string? ProviderId { get; set; }
         public DateTime DateGeneratedCode { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime ModifieddAt { get; set; }
         public bool IsUserDomain { get; set; } = false;
         public List<Address> Addresses { get; set; } = new List<Address>();
         public DateTime Creado { get; set; } = DateTime.UtcNow;

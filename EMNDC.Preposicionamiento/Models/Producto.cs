@@ -4,11 +4,12 @@
     {
         public Guid Id { get; set; }
         public required string Descripcion { get; set; }
-        public string? UnidadMedidas { get; set; }
-        public string? Organismo { get; set; }
-        public DateTime Almacenado { get; set; }
+        public string? UnidadMedida { get; set; }
+        public int? OrganismoId { get; set; }
+        public Organismo? Organismo { get; set; }
         public DateTime Creado { get; set; } = DateTime.UtcNow;
         public DateTime Modificado { get; set; } = DateTime.UtcNow;
-        public List<Almacen> Almacens { get; set; } = new List<Almacen>();
+        public List<StockAlmacen> Stocks { get; set; } = new List<StockAlmacen>();
+
     }
 }

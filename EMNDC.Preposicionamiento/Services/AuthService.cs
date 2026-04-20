@@ -42,8 +42,8 @@ namespace EMNDC.Preposicionamiento.Services
                 Email = request.Email,
                 Name = request.Name,
                 LastName = request.LastName,
-                CreatedAt = DateTime.UtcNow,
-                ModifieddAt = DateTime.UtcNow,
+                Creado = DateTime.UtcNow,
+                Modificado = DateTime.UtcNow,
             };
 
             var validateEmail = await _context.Users.Where(r=> r.Email == request.Email).FirstOrDefaultAsync();
@@ -84,33 +84,29 @@ namespace EMNDC.Preposicionamiento.Services
             if (request.Email.Split('@')[1] == "dcn.co.cu")
             {
                 var adUser= await _ldapService.AuthenticateAsync(request.Email, request.Password);
-                var ldapUser = await _userManager.FindByEmailAsync(adUser.Email);
-
-                var newUser = new UserModel
-                {
-                    UserName = adUser.Email,
-                    Email = adUser.Email,
-                    Name = adUser.FirstName,
-                    LastName = adUser.LastName,
-                    IsUserDomain = true,
-                    CreatedAt = DateTime.UtcNow,
-                    ModifieddAt = DateTime.UtcNow,
-                };
+                var ldapUser = await _context.Users.Where(u => u.Email == adUser.Email).FirstOrDefaultAsync();
 
                 if (ldapUser == null)
                 {
+                    var newUser = new UserModel
+                    {
+                        UserName = adUser.Email,
+                        Email = adUser.Email,
+                        Name = adUser.FirstName,
+                        LastName = adUser.LastName,
+                        IsUserDomain = true,
+                        Creado = DateTime.UtcNow,
+                        Modificado = DateTime.UtcNow,
+                    };
+
                     var result = await _context.Users.AddAsync(newUser);
-                    
+                    await _context.SaveChangesAsync();
+                    return newUser;
                 }
-                else
-                {
-                    var result  =  _context.Users.Update(newUser);
-                }
-                await _context.SaveChangesAsync();
-                return newUser;
+                return ldapUser;
             }
 
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _context.Users.Where(u => u.Email == request.Email).FirstOrDefaultAsync();
             if (user == null) throw new BaseUnauthorizedException();
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
