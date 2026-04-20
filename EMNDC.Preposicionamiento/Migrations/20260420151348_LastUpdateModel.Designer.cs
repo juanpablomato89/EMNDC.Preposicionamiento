@@ -4,6 +4,7 @@ using EMNDC.Preposicionamiento.DB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EMNDC.Preposicionamiento.Migrations
 {
     [DbContext(typeof(PreposicionamientoDbContext))]
-    partial class PreposicionamientoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260420151348_LastUpdateModel")]
+    partial class LastUpdateModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -226,7 +229,7 @@ namespace EMNDC.Preposicionamiento.Migrations
                     b.Property<DateTime>("Modificado")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int?>("PaisId")
+                    b.Property<int>("PaisId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -641,7 +644,8 @@ namespace EMNDC.Preposicionamiento.Migrations
                     b.HasOne("EMNDC.Preposicionamiento.Models.Pais", "Pais")
                         .WithMany("Provincias")
                         .HasForeignKey("PaisId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.OwnsOne("EMNDC.Preposicionamiento.Models.Posicionamiento", "Posicionamiento", b1 =>
                         {

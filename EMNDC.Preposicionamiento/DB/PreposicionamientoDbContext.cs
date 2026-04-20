@@ -10,7 +10,7 @@ namespace EMNDC.Preposicionamiento.DB
             : base(options) { }
 
         // DbSets
-        public DbSet<TokenModel> Tokens { get; set; }
+        public DbSet<TokenModel> Token { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Almacen> Almacenes { get; set; }
         public DbSet<Municipio> Municipios { get; set; }
