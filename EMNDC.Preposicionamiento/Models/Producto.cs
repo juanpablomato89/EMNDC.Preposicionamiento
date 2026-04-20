@@ -9,6 +9,7 @@
         public Organismo? Organismo { get; set; }
         public DateTime Creado { get; set; } = DateTime.UtcNow;
         public DateTime Modificado { get; set; } = DateTime.UtcNow;
+        public DateTime FechaIngreso { get; set; }
         public List<StockAlmacen> Stocks { get; set; } = new List<StockAlmacen>();
 
     }

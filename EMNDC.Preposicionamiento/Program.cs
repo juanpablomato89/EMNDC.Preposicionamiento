@@ -138,6 +138,7 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IMailKitService, MailService>();
+builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddScoped<IActiveDirectoryService, ActiveDirectoryService>();
 builder.Services.AddSingleton<CubaGeoService>();
 
