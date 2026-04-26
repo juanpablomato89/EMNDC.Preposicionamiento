@@ -124,7 +124,7 @@ namespace EMNDC.Preposicionamiento.Controllers
             if (await _userManager.FindByEmailAsync(dto.Email) != null)
                 return BadRequest("Ya existe un usuario con ese email.");
 
-            if (!Roles.All.Contains(dto.Role))
+            if (!await _roleManager.RoleExistsAsync(dto.Role))
                 return BadRequest("Rol no válido.");
 
             var user = new UserModel
@@ -166,7 +166,7 @@ namespace EMNDC.Preposicionamiento.Controllers
 
             if (!string.IsNullOrEmpty(dto.Role))
             {
-                if (!Roles.All.Contains(dto.Role))
+                if (!await _roleManager.RoleExistsAsync(dto.Role))
                     return BadRequest("Rol no válido.");
 
                 var currentRoles = await _userManager.GetRolesAsync(user);
@@ -233,9 +233,13 @@ namespace EMNDC.Preposicionamiento.Controllers
 
         // GET: api/Users/roles
         [HttpGet("roles")]
-        public IActionResult GetRoles()
+        public async Task<IActionResult> GetRoles()
         {
-            return Ok(Roles.All.Select(r => new { name = r }));
+            var roles = await _roleManager.Roles
+                .OrderBy(r => r.Name)
+                .Select(r => new { name = r.Name })
+                .ToListAsync();
+            return Ok(roles);
         }
     }
 }
