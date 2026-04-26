@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using EMNDC.Preposicionamiento.BasicResponses;
 using EMNDC.Preposicionamiento.IServices;
+using EMNDC.Preposicionamiento.Models;
 using EMNDC.Preposicionamiento.Models.Requests;
 using EMNDC.Preposicionamiento.Models.Responses;
 
@@ -20,12 +21,14 @@ namespace EMNDC.Preposicionamiento.Controllers
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
+        private readonly IAuditService _audit;
 
-        public AuthController(IAuthService authService, ITokenService tokenService, IMapper mapper)
+        public AuthController(IAuthService authService, ITokenService tokenService, IMapper mapper, IAuditService audit)
         {
             _authService = authService ?? throw new ArgumentNullException(nameof(_authService));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _audit = audit;
         }
 
         [HttpPost("register")]
@@ -44,14 +47,29 @@ namespace EMNDC.Preposicionamiento.Controllers
         [ProducesResponseType(typeof(BadRequest), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Login([FromBody] LoginRequests request)
         {
-            var user = await _authService.LoginAsync(request);
-            var token = await _tokenService.GenerateTokens(user);
+            try
+            {
+                var user = await _authService.LoginAsync(request);
+                var token = await _tokenService.GenerateTokens(user);
 
-            HttpContext.Response.Headers["Authorization"] = "Bearer " + token.AccessToken;
-            HttpContext.Response.Headers["RefreshToken"] = token.RefreshToken;
-            HttpContext.Response.Headers["Access-Control-Expose-Headers"] = "Authorization, RefreshToken";
-            var mapper = _mapper.Map<BasicUserResponse>(user);
-            return Ok(new ApiOkResponse(mapper));
+                HttpContext.Response.Headers["Authorization"] = "Bearer " + token.AccessToken;
+                HttpContext.Response.Headers["RefreshToken"] = token.RefreshToken;
+                HttpContext.Response.Headers["Access-Control-Expose-Headers"] = "Authorization, RefreshToken";
+                var mapper = _mapper.Map<BasicUserResponse>(user);
+
+                await _audit.LogAsync(AuditActions.LoginSuccess, success: true,
+                    userId: user.Id, userEmail: user.Email,
+                    description: $"Login exitoso para {user.Email}");
+
+                return Ok(new ApiOkResponse(mapper));
+            }
+            catch (Exception ex)
+            {
+                await _audit.LogAsync(AuditActions.LoginFail, success: false,
+                    userEmail: request?.Email,
+                    description: $"Login fallido: {ex.Message}");
+                throw;
+            }
         }
 
         [HttpPost("logout")]
@@ -61,6 +79,7 @@ namespace EMNDC.Preposicionamiento.Controllers
         {
             var userid = this.User.GetUserIdFromToken();
             await _tokenService.RevokeRefreshToken(userid);
+            await _audit.LogAsync(AuditActions.Logout, userId: userid, description: "Logout");
             return Ok("Session closed successfully.");
         }
 

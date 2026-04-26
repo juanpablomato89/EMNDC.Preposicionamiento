@@ -1,4 +1,6 @@
 using EMNDC.Preposicionamiento.DB;
+using EMNDC.Preposicionamiento.IServices;
+using EMNDC.Preposicionamiento.Models;
 using EMNDC.Preposicionamiento.Models.Dto;
 using EMNDC.Preposicionamiento.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +15,12 @@ namespace EMNDC.Preposicionamiento.Controllers
     public class SessionsController : ControllerBase
     {
         private readonly PreposicionamientoDbContext _context;
+        private readonly IAuditService _audit;
 
-        public SessionsController(PreposicionamientoDbContext context)
+        public SessionsController(PreposicionamientoDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         // GET: api/Sessions?pageIndex=&pageSize=&search=&userId=&onlyActive=
@@ -82,6 +86,11 @@ namespace EMNDC.Preposicionamiento.Controllers
 
             token.IsRevoked = true;
             await _context.SaveChangesAsync();
+
+            await _audit.LogAsync(AuditActions.SessionRevoked,
+                entityType: "Session", entityId: id.ToString(),
+                description: $"Sesión revocada (userId={token.UserId})");
+
             return NoContent();
         }
 
@@ -95,6 +104,11 @@ namespace EMNDC.Preposicionamiento.Controllers
 
             foreach (var t in tokens) t.IsRevoked = true;
             await _context.SaveChangesAsync();
+
+            await _audit.LogAsync(AuditActions.SessionsRevokedAll,
+                entityType: "User", entityId: userId,
+                description: $"{tokens.Count} sesión(es) revocada(s) para userId={userId}");
+
             return Ok(new { revoked = tokens.Count });
         }
     }

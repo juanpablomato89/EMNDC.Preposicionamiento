@@ -68,9 +68,13 @@ builder.Services.AddDbContext<PreposicionamientoDbContext>(options =>
 builder.Services.AddIdentityCore<UserModel>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<PreposicionamientoDbContext>()
+    .AddPasswordValidator<EMNDC.Preposicionamiento.Services.DbPasswordValidator>()
     .AddDefaultTokenProviders();
 
-// Configuraci�n
+builder.Services.AddDataProtection();
+builder.Services.AddHttpContextAccessor();
+
+// Configuraci�n
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
@@ -141,6 +145,13 @@ builder.Services.AddTransient<IMailKitService, MailService>();
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddScoped<IActiveDirectoryService, ActiveDirectoryService>();
 builder.Services.AddSingleton<CubaGeoService>();
+
+// Seguridad: políticas, auditoría, LDAP, alertas
+builder.Services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<ILdapConfigService, LdapConfigService>();
+builder.Services.AddScoped<IAlertEvaluator, AlertEvaluator>();
+builder.Services.AddSingleton<IAlertEmailSender, StubAlertEmailSender>();
 
 var app = builder.Build();
 

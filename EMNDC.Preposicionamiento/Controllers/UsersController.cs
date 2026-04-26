@@ -1,4 +1,5 @@
 using EMNDC.Preposicionamiento.DB;
+using EMNDC.Preposicionamiento.IServices;
 using EMNDC.Preposicionamiento.Models;
 using EMNDC.Preposicionamiento.Models.Dto;
 using EMNDC.Preposicionamiento.Utils;
@@ -17,15 +18,18 @@ namespace EMNDC.Preposicionamiento.Controllers
         private readonly UserManager<UserModel> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly PreposicionamientoDbContext _context;
+        private readonly IAuditService _audit;
 
         public UsersController(
             UserManager<UserModel> userManager,
             RoleManager<IdentityRole> roleManager,
-            PreposicionamientoDbContext context)
+            PreposicionamientoDbContext context,
+            IAuditService audit)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
+            _audit = audit;
         }
 
         // GET: api/Users?pageIndex=&pageSize=&search=&role=&organismoId=&onlyLocked=
@@ -145,6 +149,10 @@ namespace EMNDC.Preposicionamiento.Controllers
 
             await _userManager.AddToRoleAsync(user, dto.Role);
 
+            await _audit.LogAsync(AuditActions.UserCreated,
+                entityType: "User", entityId: user.Id,
+                description: $"Usuario creado: {user.Email} (rol={dto.Role})");
+
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new { user.Id });
         }
 
@@ -175,6 +183,10 @@ namespace EMNDC.Preposicionamiento.Controllers
                 await _userManager.AddToRoleAsync(user, dto.Role);
             }
 
+            await _audit.LogAsync(AuditActions.UserUpdated,
+                entityType: "User", entityId: user.Id,
+                description: $"Usuario actualizado: {user.Email}");
+
             return NoContent();
         }
 
@@ -192,6 +204,10 @@ namespace EMNDC.Preposicionamiento.Controllers
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
                 return BadRequest(result.Errors.Select(e => e.Description));
+
+            await _audit.LogAsync(AuditActions.UserDeleted,
+                entityType: "User", entityId: id,
+                description: $"Usuario eliminado: {user.Email}");
 
             return NoContent();
         }
@@ -213,6 +229,10 @@ namespace EMNDC.Preposicionamiento.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors.Select(e => e.Description));
 
+            await _audit.LogAsync(dto.Lock ? AuditActions.UserLocked : AuditActions.UserUnlocked,
+                entityType: "User", entityId: id,
+                description: $"{(dto.Lock ? "Bloqueado" : "Desbloqueado")}: {user.Email}");
+
             return NoContent();
         }
 
@@ -227,6 +247,10 @@ namespace EMNDC.Preposicionamiento.Controllers
             var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
             if (!result.Succeeded)
                 return BadRequest(result.Errors.Select(e => e.Description));
+
+            await _audit.LogAsync(AuditActions.UserPasswordReset,
+                entityType: "User", entityId: id,
+                description: $"Reset de contraseña para: {user.Email}");
 
             return NoContent();
         }

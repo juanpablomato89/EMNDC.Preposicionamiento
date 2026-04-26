@@ -1,3 +1,4 @@
+using EMNDC.Preposicionamiento.IServices;
 using EMNDC.Preposicionamiento.Models;
 using EMNDC.Preposicionamiento.Models.Dto;
 using EMNDC.Preposicionamiento.Utils;
@@ -15,11 +16,13 @@ namespace EMNDC.Preposicionamiento.Controllers
     {
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<UserModel> _userManager;
+        private readonly IAuditService _audit;
 
-        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<UserModel> userManager)
+        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<UserModel> userManager, IAuditService audit)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _audit = audit;
         }
 
         // GET: api/Roles
@@ -75,6 +78,9 @@ namespace EMNDC.Preposicionamiento.Controllers
                 return BadRequest(result.Errors.Select(e => e.Description));
 
             var created = await _roleManager.FindByNameAsync(name);
+            await _audit.LogAsync(AuditActions.RoleCreated,
+                entityType: "Role", entityId: created!.Id,
+                description: $"Rol creado: {created.Name}");
             return CreatedAtAction(nameof(GetRole), new { id = created!.Id }, new { id = created.Id });
         }
 
@@ -96,10 +102,15 @@ namespace EMNDC.Preposicionamiento.Controllers
                 await _roleManager.RoleExistsAsync(newName))
                 return BadRequest("Ya existe un rol con ese nombre.");
 
+            var oldName = role.Name;
             role.Name = newName;
             var result = await _roleManager.UpdateAsync(role);
             if (!result.Succeeded)
                 return BadRequest(result.Errors.Select(e => e.Description));
+
+            await _audit.LogAsync(AuditActions.RoleUpdated,
+                entityType: "Role", entityId: role.Id,
+                description: $"Rol renombrado: {oldName} -> {newName}");
 
             return NoContent();
         }
@@ -121,6 +132,10 @@ namespace EMNDC.Preposicionamiento.Controllers
             var result = await _roleManager.DeleteAsync(role);
             if (!result.Succeeded)
                 return BadRequest(result.Errors.Select(e => e.Description));
+
+            await _audit.LogAsync(AuditActions.RoleDeleted,
+                entityType: "Role", entityId: id,
+                description: $"Rol eliminado: {role.Name}");
 
             return NoContent();
         }

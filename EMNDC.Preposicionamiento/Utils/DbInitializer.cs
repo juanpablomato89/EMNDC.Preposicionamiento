@@ -39,6 +39,18 @@ namespace EMNDC.Preposicionamiento.Utils
                 await context.SaveChangesAsync();
             }
 
+            if (!await context.PasswordPolicies.AnyAsync())
+            {
+                context.PasswordPolicies.Add(new PasswordPolicy());
+                await context.SaveChangesAsync();
+            }
+
+            if (!await context.LdapConfigurations.AnyAsync())
+            {
+                context.LdapConfigurations.Add(new LdapConfiguration());
+                await context.SaveChangesAsync();
+            }
+
             const string adminEmail = "admin@preposicionamiento.local";
             var admin = await userManager.FindByEmailAsync(adminEmail);
             if (admin == null)

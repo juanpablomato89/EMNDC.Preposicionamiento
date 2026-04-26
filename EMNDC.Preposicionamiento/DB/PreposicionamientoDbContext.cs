@@ -20,6 +20,13 @@ namespace EMNDC.Preposicionamiento.DB
         public DbSet<Organismo> Organismos { get; set; }
         public DbSet<StockAlmacen> StocksAlmacen { get; set; }
 
+        // Seguridad: políticas, auditoría, LDAP, alertas
+        public DbSet<PasswordPolicy> PasswordPolicies { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<LdapConfiguration> LdapConfigurations { get; set; }
+        public DbSet<AlertRule> AlertRules { get; set; }
+        public DbSet<AlertNotification> AlertNotifications { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -141,6 +148,59 @@ namespace EMNDC.Preposicionamiento.DB
             modelBuilder.Entity<Organismo>(entity =>
             {
                 entity.Property(o => o.Descripcion).HasMaxLength(100).IsRequired();
+            });
+
+            // ========== SEGURIDAD ==========
+
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasIndex(a => a.Timestamp);
+                entity.HasIndex(a => a.UserId);
+                entity.HasIndex(a => a.Action);
+                entity.Property(a => a.Action).HasMaxLength(60).IsRequired();
+                entity.Property(a => a.EntityType).HasMaxLength(60);
+                entity.Property(a => a.EntityId).HasMaxLength(60);
+                entity.Property(a => a.UserEmail).HasMaxLength(256);
+                entity.Property(a => a.IpAddress).HasMaxLength(64);
+                entity.Property(a => a.Description).HasMaxLength(1000);
+            });
+
+            modelBuilder.Entity<PasswordPolicy>(entity =>
+            {
+                entity.Property(p => p.UpdatedByUserId).HasMaxLength(450);
+            });
+
+            modelBuilder.Entity<LdapConfiguration>(entity =>
+            {
+                entity.Property(l => l.Host).HasMaxLength(255);
+                entity.Property(l => l.BaseDn).HasMaxLength(500);
+                entity.Property(l => l.BindDn).HasMaxLength(500);
+                entity.Property(l => l.UserSearchFilter).HasMaxLength(500);
+                entity.Property(l => l.EmailAttribute).HasMaxLength(100);
+                entity.Property(l => l.NameAttribute).HasMaxLength(100);
+                entity.Property(l => l.LastNameAttribute).HasMaxLength(100);
+                entity.Property(l => l.DefaultRole).HasMaxLength(60);
+                entity.Property(l => l.UpdatedByUserId).HasMaxLength(450);
+                entity.Property(l => l.BindPasswordEncrypted).HasColumnType("TEXT");
+            });
+
+            modelBuilder.Entity<AlertRule>(entity =>
+            {
+                entity.Property(r => r.Name).HasMaxLength(120).IsRequired();
+                entity.Property(r => r.Description).HasMaxLength(500);
+                entity.Property(r => r.NotifyEmails).HasMaxLength(2000);
+                entity.HasIndex(r => r.EventType);
+            });
+
+            modelBuilder.Entity<AlertNotification>(entity =>
+            {
+                entity.HasOne(n => n.AlertRule)
+                    .WithMany()
+                    .HasForeignKey(n => n.AlertRuleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(n => n.TriggeredAt);
+                entity.Property(n => n.Payload).HasColumnType("TEXT");
+                entity.Property(n => n.Error).HasMaxLength(1000);
             });
         }
     }
