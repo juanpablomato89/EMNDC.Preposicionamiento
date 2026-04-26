@@ -1,4 +1,3 @@
-﻿
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -28,9 +27,24 @@ namespace EMNDC.Preposicionamiento.Utils
         {
             var claimsIdentity = user.Identity as ClaimsIdentity;
             var role = claimsIdentity?.FindFirst(ClaimTypes.Role)?.Value
+                       ?? claimsIdentity?.FindFirst("role")?.Value
                        ?? claimsIdentity?.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
 
             return role ?? throw new Exception("The Role not found in the token.");
+        }
+
+        public static bool IsAdmin(this ClaimsPrincipal user)
+        {
+            try { return user.GetUserRoleFromToken() == Roles.Admin; }
+            catch { return false; }
+        }
+
+        public static int? GetUserOrganismoIdFromToken(this ClaimsPrincipal user)
+        {
+            var claimsIdentity = user.Identity as ClaimsIdentity;
+            var organismoIdClaim = claimsIdentity?.FindFirst("organismoId")?.Value;
+            if (string.IsNullOrWhiteSpace(organismoIdClaim)) return null;
+            return int.TryParse(organismoIdClaim, out var id) ? id : (int?)null;
         }
 
         public static string GetUserNameFromToken(this ClaimsPrincipal user)

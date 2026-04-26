@@ -30,14 +30,23 @@ namespace EMNDC.Preposicionamiento.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
-            var claims = new[]
+            var roles = await _userManager.GetRolesAsync(user);
+            var primaryRole = roles.FirstOrDefault() ?? "User";
+
+            var claimList = new List<Claim>
             {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Name, user.Name),
-            new Claim("lastname", user.LastName),
-            new Claim("role", (await _userManager.GetRolesAsync(user)).FirstOrDefault() ?? "user")
-        };
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Name, user.Name ?? string.Empty),
+                new Claim("lastname", user.LastName ?? string.Empty),
+                new Claim("role", primaryRole),
+                new Claim(ClaimTypes.Role, primaryRole)
+            };
+
+            if (user.OrganismoId.HasValue)
+                claimList.Add(new Claim("organismoId", user.OrganismoId.Value.ToString()));
+
+            var claims = claimList.ToArray();
 
             var accessToken = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],

@@ -1,8 +1,8 @@
-﻿using EMNDC.Preposicionamiento.DB;
+using EMNDC.Preposicionamiento.DB;
 using EMNDC.Preposicionamiento.Models;
 using EMNDC.Preposicionamiento.Models.Dto;
 using EMNDC.Preposicionamiento.Utils;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +10,7 @@ namespace EMNDC.Preposicionamiento.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductosController : ControllerBase
     {
         private readonly PreposicionamientoDbContext _context;
@@ -19,7 +20,7 @@ namespace EMNDC.Preposicionamiento.Controllers
             _context = context;
         }
 
-        // GET: api/Productos?pageIndex=0&pageSize=10&search=&provinciaId=&municipioId=
+        // GET: api/Productos?pageIndex=0&pageSize=10&search=&provinciaId=&municipioId=&organismoId=
         [HttpGet]
         public async Task<ActionResult<PaginatedList<ProductoDto>>> GetProductos(
             int pageIndex = 0,
@@ -31,6 +32,12 @@ namespace EMNDC.Preposicionamiento.Controllers
             string? orderBy = "Descripcion",
             bool ascending = true)
         {
+            var isAdmin = User.IsAdmin();
+            var userOrganismoId = User.GetUserOrganismoIdFromToken();
+
+            if (!isAdmin && userOrganismoId == null)
+                return Forbid();
+
             var query = _context.Productos
                 .Include(p => p.Organismo)
                 .Include(p => p.Stocks)
@@ -40,25 +47,20 @@ namespace EMNDC.Preposicionamiento.Controllers
                     .ThenInclude(m => m.Provincia)
                 .AsQueryable();
 
-            // Filtro por búsqueda en descripción
+            if (!isAdmin)
+                query = query.Where(p => p.OrganismoId == userOrganismoId);
+            else if (organismoId.HasValue)
+                query = query.Where(p => p.OrganismoId == organismoId);
+
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(p => p.Descripcion.Contains(search));
 
-            // Filtro por organismo
-            if (organismoId.HasValue)
-                query = query.Where(p => p.OrganismoId == organismoId);
-
-            // Filtro por provincia/municipio (productos que estén en almacenes de esa ubicación)
             if (provinciaId.HasValue)
-            {
                 query = query.Where(p => p.Stocks.Any(s => s.Almacen.Address != null && s.Almacen.Address.Municipio.ProvinciaId == provinciaId));
-            }
-            if (municipioId.HasValue)
-            {
-                query = query.Where(p => p.Stocks.Any(s => s.Almacen.Address != null && s.Almacen.Address.MunicipioId == municipioId));
-            }
 
-            // Ordenamiento dinámico
+            if (municipioId.HasValue)
+                query = query.Where(p => p.Stocks.Any(s => s.Almacen.Address != null && s.Almacen.Address.MunicipioId == municipioId));
+
             query = orderBy?.ToLower() switch
             {
                 "descripcion" => ascending ? query.OrderBy(p => p.Descripcion) : query.OrderByDescending(p => p.Descripcion),
@@ -86,10 +88,16 @@ namespace EMNDC.Preposicionamiento.Controllers
                 })
                 .ToListAsync();
 
-            return Ok();
+            return Ok(new
+            {
+                items,
+                totalCount,
+                pageIndex,
+                pageSize
+            });
         }
 
-        // GET: api/Productos/5
+        // GET: api/Productos/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductoDto>> GetProducto(Guid id)
         {
@@ -97,8 +105,14 @@ namespace EMNDC.Preposicionamiento.Controllers
                 .Include(p => p.Organismo)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (producto == null)
-                return NotFound();
+            if (producto == null) return NotFound();
+
+            if (!User.IsAdmin())
+            {
+                var userOrganismoId = User.GetUserOrganismoIdFromToken();
+                if (userOrganismoId == null || producto.OrganismoId != userOrganismoId)
+                    return Forbid();
+            }
 
             return Ok(new ProductoDto
             {
@@ -117,12 +131,19 @@ namespace EMNDC.Preposicionamiento.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductoDto>> PostProducto(ProductoCreateUpdateDto dto)
         {
+            var isAdmin = User.IsAdmin();
+            var userOrganismoId = User.GetUserOrganismoIdFromToken();
+
+            int? organismoIdFinal = isAdmin ? dto.OrganismoId : userOrganismoId;
+            if (organismoIdFinal == null)
+                return BadRequest("El usuario no pertenece a ningún organismo.");
+
             var producto = new Producto
             {
                 Id = Guid.NewGuid(),
                 Descripcion = dto.Descripcion,
                 UnidadMedida = dto.UnidadMedida,
-                OrganismoId = dto.OrganismoId,
+                OrganismoId = organismoIdFinal,
                 FechaIngreso = dto.FechaIngreso,
                 Creado = DateTime.UtcNow,
                 Modificado = DateTime.UtcNow
@@ -143,44 +164,60 @@ namespace EMNDC.Preposicionamiento.Controllers
             });
         }
 
-        // PUT: api/Productos/5
+        // PUT: api/Productos/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProducto(Guid id, ProductoCreateUpdateDto dto)
         {
             var producto = await _context.Productos.FindAsync(id);
-            if (producto == null)
-                return NotFound();
+            if (producto == null) return NotFound();
+
+            var isAdmin = User.IsAdmin();
+            var userOrganismoId = User.GetUserOrganismoIdFromToken();
+
+            if (!isAdmin)
+            {
+                if (userOrganismoId == null || producto.OrganismoId != userOrganismoId)
+                    return Forbid();
+            }
 
             producto.Descripcion = dto.Descripcion;
             producto.UnidadMedida = dto.UnidadMedida;
-            producto.OrganismoId = dto.OrganismoId;
             producto.FechaIngreso = dto.FechaIngreso;
             producto.Modificado = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            if (isAdmin && dto.OrganismoId.HasValue)
+                producto.OrganismoId = dto.OrganismoId;
 
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        // DELETE: api/Productos/5
+        // DELETE: api/Productos/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProducto(Guid id)
         {
             var producto = await _context.Productos.FindAsync(id);
-            if (producto == null)
-                return NotFound();
+            if (producto == null) return NotFound();
+
+            if (!User.IsAdmin())
+            {
+                var userOrganismoId = User.GetUserOrganismoIdFromToken();
+                if (userOrganismoId == null || producto.OrganismoId != userOrganismoId)
+                    return Forbid();
+            }
 
             _context.Productos.Remove(producto);
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        // GET: api/Productos/organismos (para llenar combo)
+        // GET: api/Productos/organismos
         [HttpGet("organismos")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<OrganismoDto>>> GetOrganismos()
         {
             var organismos = await _context.Organismos
+                .OrderBy(o => o.Descripcion)
                 .Select(o => new OrganismoDto { Id = o.Id, Descripcion = o.Descripcion })
                 .ToListAsync();
             return Ok(organismos);

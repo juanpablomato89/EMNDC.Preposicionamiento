@@ -42,6 +42,7 @@ namespace EMNDC.Preposicionamiento.Services
                 Email = request.Email,
                 Name = request.Name,
                 LastName = request.LastName,
+                OrganismoId = request.OrganismoId,
                 Creado = DateTime.UtcNow,
                 Modificado = DateTime.UtcNow,
             };
@@ -58,6 +59,8 @@ namespace EMNDC.Preposicionamiento.Services
 
             if (!result.Succeeded)
                 throw new ErrorCreatingUserBadRequesException(_localizer);
+
+            await _userManager.AddToRoleAsync(user, Utils.Roles.User);
 
             return user;
         }
@@ -101,6 +104,7 @@ namespace EMNDC.Preposicionamiento.Services
 
                     var result = await _context.Users.AddAsync(newUser);
                     await _context.SaveChangesAsync();
+                    await _userManager.AddToRoleAsync(newUser, Utils.Roles.User);
                     return newUser;
                 }
                 return ldapUser;

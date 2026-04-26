@@ -15,5 +15,6 @@ namespace EMNDC.Preposicionamiento.Models.Requests
         [Required]
         public required string ConfirmationPassword { get; set; }
 
+        public int? OrganismoId { get; set; }
     }
 }
